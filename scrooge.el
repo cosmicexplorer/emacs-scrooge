@@ -2,34 +2,17 @@
 
 ;; Keywords: scrooge
 
-;; Licensed to the Apache Software Foundation (ASF) under one
-;; or more contributor license agreements. See the NOTICE file
-;; distributed with this work for additional information
-;; regarding copyright ownership. The ASF licenses this file
-;; to you under the Apache License, Version 2.0 (the
-;; "License"); you may not use this file except in compliance
-;; with the License. You may obtain a copy of the License at
-;;
-;;   http://www.apache.org/licenses/LICENSE-2.0
-;;
-;; Unless required by applicable law or agreed to in writing,
-;; software distributed under the License is distributed on an
-;; "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-;; KIND, either express or implied. See the License for the
-;; specific language governing permissions and limitations
-;; under the License.
-;;
-
-;;; Adapted from thrift.el provided by Apache Thrift by Danny McClanahan.
-
 ;;; Commentary:
 
-;;
+;; Adapted from thrift.el provided by the Apache Thrift repository
+;; (https://thrift.apache.org/) by Danny McClanahan
+;; <danieldmcclanahan@gmail.com>.
 
 ;;; Code:
 
 (require 'font-lock)
 
+;; compat for older emacs
 (defvar jit-lock-start)
 (defvar jit-lock-end)
 
@@ -126,7 +109,8 @@
 (defvar scrooge-mode-syntax-table
   (let ((scrooge-mode-syntax-table (make-syntax-table)))
     (modify-syntax-entry ?_ "w" scrooge-mode-syntax-table)
-    (modify-syntax-entry ?/ ". 124" scrooge-mode-syntax-table) ; c/c++-style comments
+    ;; #-comments removed
+    (modify-syntax-entry ?/ ". 124" scrooge-mode-syntax-table)
     (modify-syntax-entry ?* ". 23b" scrooge-mode-syntax-table)
     (modify-syntax-entry ?\n ">" scrooge-mode-syntax-table)
     scrooge-mode-syntax-table)
