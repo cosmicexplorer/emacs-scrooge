@@ -114,11 +114,13 @@
     (modify-syntax-entry ?* ". 23b" scrooge-mode-syntax-table)
     (modify-syntax-entry ?\n ">" scrooge-mode-syntax-table)
     scrooge-mode-syntax-table)
-  "Syntax table for scrooge-mode")
+  "Syntax table for scrooge-mode.")
 
-(defconst scrooge-comment-property 'scrooge-comment)
+(defconst scrooge-comment-property 'scrooge-comment
+  "Text property used for denoting comments.")
 
 (defun scrooge-syntax-propertize-hash-comments (beg end)
+  "Propertize # line comments and not #@namespace lines between BEG and END."
   (save-excursion
     (goto-char beg)
     (while (re-search-forward "^#" end t)
@@ -134,6 +136,7 @@
             (goto-char end)))))))
 
 (defun scrooge-match-real-hash-comments (last)
+  "Add fonts to propertized hash comments between point and LAST."
   (let ((cur (get-text-property (point) scrooge-comment-property))
         pos)
     (unless cur
@@ -147,12 +150,15 @@
       cur)))
 
 (defun scrooge-syntax-propertize-extend-region (start end)
+  "Extend region to propertize between START and END upon change."
   (let* ((b (line-beginning-position))
          (e (if (and (bolp) (> (point) b)) (point)
               (min (1+ (line-end-position)) (point-max)))))
     (unless (and (= start b) (= end e)) (cons b e))))
 
 (defun scrooge-font-lock-extend (start end _)
+  "Delegate to `scrooge-syntax-propertize-extend-region'.
+Propertize between START and END."
   (let ((res (scrooge-syntax-propertize-extend-region start end)))
     (when res
       (setq jit-lock-start (car res)
