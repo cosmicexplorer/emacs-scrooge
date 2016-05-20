@@ -165,16 +165,10 @@ Propertize between START and END."
             jit-lock-end (cdr res)))))
 
 ;;;###autoload
-(defun scrooge-mode ()
+(define-derived-mode scrooge-mode prog-mode "Scrooge"
   "Mode for editing Scrooge files."
-  (interactive)
-  (kill-all-local-variables)
-  (set-syntax-table scrooge-mode-syntax-table)
+  :syntax-table scrooge-mode-syntax-table
   (set (make-local-variable 'font-lock-defaults) '(scrooge-font-lock-keywords))
-  ;; (set (make-local-variable 'font-lock-multiline) t)
-  (setq major-mode 'scrooge-mode)
-  (setq mode-name "Scrooge")
-  (run-hooks 'scrooge-mode-hook)
   (set (make-local-variable 'indent-line-function) 'scrooge-indent-line)
   (set (make-local-variable 'syntax-propertize-function)
        #'scrooge-syntax-propertize-hash-comments)
