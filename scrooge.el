@@ -35,8 +35,7 @@
       (2 font-lock-builtin-face)
       (3 font-lock-type-face)
       (4 font-lock-string-face))) ;; namespace decls
-   '(scrooge-match-real-hash-comments . ((0 font-lock-comment-face)))
-   )
+   '(scrooge-match-real-hash-comments . ((0 font-lock-comment-face))))
   "Scrooge Keywords.")
 
 ;; indentation
@@ -44,66 +43,46 @@
   "Indent current line as Scrooge code."
   (interactive)
   (beginning-of-line)
-  (if (bobp)
-      (indent-line-to 0)
+  (if (bobp) (indent-line-to 0)
     (let ((not-indented t) cur-indent)
-      (if (looking-at "^[ \t]*\\(}\\|throws\\)")
-          (if (looking-at "^[ \t]*}")
-              (progn
-                (save-excursion
-                  (forward-line -1)
-                  (setq cur-indent (- (current-indentation) scrooge-indent-level)))
-                (if (< cur-indent 0)
-                    (setq cur-indent 0)))
+      (save-excursion
+        (if (looking-at-p "^[ \t]*\\(}\\|throws\\)")
             (progn
-              (save-excursion
-                (forward-line -1)
-                (if (looking-at "^[ \t]*[\\.<>[:word:]]+[ \t]+[\\.<>[:word:]]+[ \t]*(")
-                    (setq cur-indent (+ (current-indentation) scrooge-indent-level))
-                  (setq cur-indent (current-indentation))))))
-        (save-excursion
+              (forward-line -1)
+              (if (looking-at-p "^[ \t]*}")
+                  (let ((ind (- (current-indentation) scrooge-indent-level)))
+                    (setq cur-indent (if (< ind 0) 0 ind)))
+                (setq cur-indent
+                      (if (looking-at-p "^[ \t]*[\\.<>[:word:]]+[ \t]+[\\.<>[:word:]]+[ \t]*(")
+                          (+ (current-indentation) scrooge-indent-level)
+                        (current-indentation)))))
           (while not-indented
             (forward-line -1)
-            (if (looking-at "^[ \t]*}")
-                (progn
-                  (setq cur-indent (current-indentation))
-                  (setq not-indented nil))
-              (if (looking-at "^.*{[^}]*$")
-                  (progn
-                    (setq cur-indent (+ (current-indentation) scrooge-indent-level))
-                    (setq not-indented nil))
-                (if (bobp)
-                    (setq not-indented nil)))
-              (if (looking-at "^[ \t]*throws")
-                  (progn
-                    (setq cur-indent (- (current-indentation) scrooge-indent-level))
-                    (if (< cur-indent 0)
-                        (setq cur-indent 0))
-                    (setq not-indented nil))
-                (if (bobp)
-                    (setq not-indented nil)))
-              (if (looking-at "^[ \t]*[\\.<>[:word:]]+[ \t]+[\\.<>[:word:]]+[ \t]*([^)]*$")
-                  (progn
-                    (setq cur-indent (+ (current-indentation) scrooge-indent-level))
-                    (setq not-indented nil))
-                (if (bobp)
-                    (setq not-indented nil)))
-              (if (looking-at "^[ \t]*\\/\\*")
-                  (progn
-                    (setq cur-indent (+ (current-indentation) 1))
-                    (setq not-indented nil))
-                (if (bobp)
-                    (setq not-indented nil)))
-              (if (looking-at "^[ \t]*\\*\\/")
-                  (progn
-                    (setq cur-indent (- (current-indentation) 1))
-                    (setq not-indented nil))
-                (if (bobp)
-                    (setq not-indented nil)))
-              ))))
-      (if cur-indent
-          (indent-line-to cur-indent)
-        (indent-line-to 0)))))
+            (if (looking-at-p "^[ \t]*}")
+                (setq cur-indent (current-indentation)
+                      not-indented nil)
+              (if (looking-at-p "^.*{[^}]*$")
+                  (setq cur-indent (+ (current-indentation) scrooge-indent-level)
+                        not-indented nil)
+                (when (bobp) (setq not-indented nil)))
+              (if (looking-at-p "^[ \t]*throws")
+                  (let ((ind (- (current-indentation) scrooge-indent-level)))
+                    (setq cur-indent (if (< ind 0) 0 ind)
+                          not-indented nil))
+                (when (bobp) (setq not-indented nil)))
+              (if (looking-at-p "^[ \t]*[\\.<>[:word:]]+[ \t]+[\\.<>[:word:]]+[ \t]*([^)]*$")
+                  (setq cur-indent (+ (current-indentation) scrooge-indent-level)
+                        not-indented nil)
+                (when (bobp) (setq not-indented nil)))
+              (if (looking-at-p "^[ \t]*\\/\\*")
+                  (setq cur-indent (+ (current-indentation) 1)
+                        not-indented nil)
+                (when (bobp) (setq not-indented nil)))
+              (if (looking-at-p "^[ \t]*\\*\\/")
+                  (setq cur-indent (- (current-indentation) 1)
+                        not-indented nil)
+                (when (bobp) (setq not-indented nil)))))))
+      (indent-line-to (or cur-indent 0)))))
 
 ;; C/C++- and sh-style comments; also allowing underscore in words
 (defvar scrooge-mode-syntax-table
