@@ -97,7 +97,6 @@ Propertize between START and END."
   "Mode for editing Scrooge files."
   :syntax-table scrooge-mode-syntax-table
   (set (make-local-variable 'font-lock-defaults) '(scrooge-font-lock-keywords))
-  (set (make-local-variable 'indent-line-function) 'scrooge-indent-line)
   (set (make-local-variable 'syntax-propertize-function)
        #'scrooge-syntax-propertize-hash-comments)
   (add-hook 'syntax-propertize-extend-region-functions
