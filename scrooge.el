@@ -1,6 +1,9 @@
 ;;; scrooge.el --- Major mode for Apache Scrooge files
 
-;; Keywords: scrooge
+;; Author: Daniel McClanahan <danieldmcclanahan@gmail.com>
+;; Version: 0.1
+;; Package-Requires: ((emacs "24") (thrift "20140312.1348"))
+;; Keywords: scrooge, thrift
 
 ;;; Commentary:
 
