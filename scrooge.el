@@ -44,7 +44,8 @@
 
 ;; C/C++- and sh-style comments; also allowing underscore in words
 (defvar scrooge-mode-syntax-table
-  (let ((scrooge-mode-syntax-table (make-syntax-table thrift-mode-syntax-table)))
+  (let ((scrooge-mode-syntax-table
+         (make-syntax-table thrift-mode-syntax-table)))
     ;; #-comments removed
     (modify-syntax-entry ?# "." scrooge-mode-syntax-table)
     scrooge-mode-syntax-table)
