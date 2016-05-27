@@ -10,6 +10,7 @@
 
 ;;; Code:
 
+(require 'thrift)
 (require 'font-lock)
 
 ;; compat for older emacs
@@ -19,9 +20,6 @@
 (defvar scrooge-mode-hook nil)
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.thrift\\'" . scrooge-mode))
-
-(defvar scrooge-indent-level 2
-  "Defines 2 spaces for scrooge indentation.")
 
 ;; syntax coloring
 (defconst scrooge-font-lock-keywords
@@ -38,60 +36,11 @@
    '(scrooge-match-real-hash-comments . ((0 font-lock-comment-face))))
   "Scrooge Keywords.")
 
-;; indentation
-(defun scrooge-indent-line ()
-  "Indent current line as Scrooge code."
-  (interactive)
-  (beginning-of-line)
-  (if (bobp) (indent-line-to 0)
-    (let ((not-indented t) cur-indent)
-      (save-excursion
-        (if (looking-at-p "^[ \t]*\\(}\\|throws\\)")
-            (progn
-              (forward-line -1)
-              (if (looking-at-p "^[ \t]*}")
-                  (let ((ind (- (current-indentation) scrooge-indent-level)))
-                    (setq cur-indent (if (< ind 0) 0 ind)))
-                (setq cur-indent
-                      (if (looking-at-p "^[ \t]*[\\.<>[:word:]]+[ \t]+[\\.<>[:word:]]+[ \t]*(")
-                          (+ (current-indentation) scrooge-indent-level)
-                        (current-indentation)))))
-          (while not-indented
-            (forward-line -1)
-            (if (looking-at-p "^[ \t]*}")
-                (setq cur-indent (current-indentation)
-                      not-indented nil)
-              (if (looking-at-p "^.*{[^}]*$")
-                  (setq cur-indent (+ (current-indentation) scrooge-indent-level)
-                        not-indented nil)
-                (when (bobp) (setq not-indented nil)))
-              (if (looking-at-p "^[ \t]*throws")
-                  (let ((ind (- (current-indentation) scrooge-indent-level)))
-                    (setq cur-indent (if (< ind 0) 0 ind)
-                          not-indented nil))
-                (when (bobp) (setq not-indented nil)))
-              (if (looking-at-p "^[ \t]*[\\.<>[:word:]]+[ \t]+[\\.<>[:word:]]+[ \t]*([^)]*$")
-                  (setq cur-indent (+ (current-indentation) scrooge-indent-level)
-                        not-indented nil)
-                (when (bobp) (setq not-indented nil)))
-              (if (looking-at-p "^[ \t]*\\/\\*")
-                  (setq cur-indent (+ (current-indentation) 1)
-                        not-indented nil)
-                (when (bobp) (setq not-indented nil)))
-              (if (looking-at-p "^[ \t]*\\*\\/")
-                  (setq cur-indent (- (current-indentation) 1)
-                        not-indented nil)
-                (when (bobp) (setq not-indented nil)))))))
-      (indent-line-to (or cur-indent 0)))))
-
 ;; C/C++- and sh-style comments; also allowing underscore in words
 (defvar scrooge-mode-syntax-table
-  (let ((scrooge-mode-syntax-table (make-syntax-table)))
-    (modify-syntax-entry ?_ "w" scrooge-mode-syntax-table)
+  (let ((scrooge-mode-syntax-table (make-syntax-table thrift-mode-syntax-table)))
     ;; #-comments removed
-    (modify-syntax-entry ?/ ". 124" scrooge-mode-syntax-table)
-    (modify-syntax-entry ?* ". 23b" scrooge-mode-syntax-table)
-    (modify-syntax-entry ?\n ">" scrooge-mode-syntax-table)
+    (modify-syntax-entry ?# "." scrooge-mode-syntax-table)
     scrooge-mode-syntax-table)
   "Syntax table for scrooge-mode.")
 
@@ -144,7 +93,7 @@ Propertize between START and END."
             jit-lock-end (cdr res)))))
 
 ;;;###autoload
-(define-derived-mode scrooge-mode prog-mode "Scrooge"
+(define-derived-mode scrooge-mode thrift-mode "Scrooge"
   "Mode for editing Scrooge files."
   :syntax-table scrooge-mode-syntax-table
   (set (make-local-variable 'font-lock-defaults) '(scrooge-font-lock-keywords))
