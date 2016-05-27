@@ -1,4 +1,4 @@
-;;; scrooge.el --- Major mode for Apache Scrooge files
+;;; scrooge.el --- Major mode for Twitter Scrooge files
 
 ;; Author: Daniel McClanahan <danieldmcclanahan@gmail.com>
 ;; Version: 0.1
