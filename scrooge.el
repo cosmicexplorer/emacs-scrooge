@@ -2,7 +2,7 @@
 
 ;; Author: Daniel McClanahan <danieldmcclanahan@gmail.com>
 ;; Version: 0.1
-;; Package-Requires: ((emacs "24") (thrift "20140312.1348"))
+;; Package-Requires: ((emacs "24") (thrift "0.9.3"))
 ;; Keywords: scrooge, thrift
 
 ;;; Commentary:
