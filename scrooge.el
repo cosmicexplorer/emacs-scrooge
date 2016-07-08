@@ -29,17 +29,14 @@
 
 ;; syntax coloring
 (defconst scrooge-font-lock-keywords
-  (list
-   '("\\<\\(include\\|struct\\|exception\\|typedef\\|const\\|enum\\|service\\|extends\\|void\\|oneway\\|throws\\|optional\\|required\\)\\>" . font-lock-keyword-face) ;; keywords
-   '("\\<\\(bool\\|byte\\|i16\\|i32\\|i64\\|double\\|string\\|binary\\|map\\|list\\|set\\)\\>" . font-lock-type-face) ;; built-in types
-   '("\\<\\([0-9]+\\)\\>" . font-lock-variable-name-face)     ;; ordinals
-   '("\\<\\(\\w+\\)\\s-*(" (1 font-lock-function-name-face))  ;; functions
-   (cons scrooge-special-namespace-regexp
-         '((1 font-lock-keyword-face)
-           (2 font-lock-builtin-face)
-           (3 font-lock-type-face)
-           (4 font-lock-string-face))) ;; namespace decls
-   '("^#.*\\(\n\\|\\'\\)" . (0 font-lock-comment-face)))
+  (append
+   thrift-font-lock-keywords
+   `((,scrooge-special-namespace-regexp
+      (1 font-lock-keyword-face)
+      (2 font-lock-builtin-face)
+      (3 font-lock-type-face)
+      (4 font-lock-string-face)) ;; namespace decls
+     ("^#.*\\(\n\\|\\'\\)" (0 font-lock-comment-face))))
   "Scrooge Keywords.")
 
 ;; C/C++- and sh-style comments; also allowing underscore in words
