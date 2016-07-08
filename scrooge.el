@@ -48,9 +48,6 @@
     scrooge-mode-syntax-table)
   "Syntax table for scrooge-mode.")
 
-(defconst scrooge-comment-property 'scrooge-comment
-  "Text property used for denoting comments.")
-
 (defun scrooge-syntax-propertize-extend-region (start end)
   "Extend region to propertize between START and END upon change."
   (let* ((b (line-beginning-position))
