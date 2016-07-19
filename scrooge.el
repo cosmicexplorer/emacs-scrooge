@@ -36,7 +36,7 @@
       (2 font-lock-builtin-face)
       (3 font-lock-type-face)
       (4 font-lock-string-face)) ;; namespace decls
-     ("^#.*\\(\n\\|\\'\\)" (0 font-lock-comment-face))))
+     ("#.*\\(\n\\|\\'\\)" (0 font-lock-comment-face))))
   "Scrooge Keywords.")
 
 ;; C/C++- and sh-style comments; also allowing underscore in words
@@ -67,6 +67,7 @@
   "Mode for editing Scrooge files."
   :syntax-table scrooge-mode-syntax-table
   (set (make-local-variable 'font-lock-defaults) '(scrooge-font-lock-keywords))
+  (set (make-local-variable 'comment-start) "# ")
   (add-hook 'jit-lock-after-change-extend-region-functions
             'scrooge-font-lock-extend t t))
 
