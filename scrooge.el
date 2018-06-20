@@ -14,7 +14,7 @@
 
 ;; Author: Daniel McClanahan <danieldmcclanahan@gmail.com>
 ;; Version: 0.2
-;; Package-Requires: ((emacs "24") (cl-lib "0.5") (dash "2.13.0") (rainbow-delimiters "1.3.7") (thrift "0.9.3"))
+;; Package-Requires: ((emacs "24") (dash "2.13.0") (thrift "0.9.3"))
 ;; Keywords: scrooge, thrift
 
 ;;; Commentary:
@@ -24,12 +24,10 @@
 
 ;;; Code:
 
-(require 'cl-lib)
 (require 'dash)
 (require 'thrift)
 (require 'font-lock)
 (require 'pcase)
-(require 'rainbow-delimiters)
 (require 'rx)
 
 
@@ -57,11 +55,6 @@
 (defgroup scrooge nil
   "Group for `scrooge-mode' customizations."
   :group 'prog-mode)
-
-(defcustom scrooge-use-rainbow-delimiters t
-  "Whether to enable `rainbow-delimiters-mode' when entering `scrooge-mode'."
-  :type 'boolean
-  :group 'scrooge)
 
 (defcustom scrooge-indent-level 2
   "The number of spaces to indent thrift and scrooge files."
@@ -216,18 +209,12 @@ FIXME: add case-based syntax highlighting!")
   ;;           t t)
   (add-hook 'jit-lock-after-change-extend-region-functions
             #'scrooge--font-lock-extend
-            t t)
-  (rainbow-delimiters-mode-disable)
-  ;; (when scrooge-use-rainbow-delimiters
-  ;;   (rainbow-delimiters-mode-enable))
-  )
+            t t))
 
 
 ;; Modifications of global state (advice goes here too)
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.thrift\\'" . scrooge-mode))
-
-;; (remove-hook 'scrooge-mode-hook #'rainbow-delimiters-mode-enable)
 
 
 (provide 'scrooge)
