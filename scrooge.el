@@ -27,27 +27,49 @@
 
 (require 'thrift)
 (require 'font-lock)
+(require 'rx)
 
-;; compat for older emacs
+
+;; Compatibility for older emacs (ripped from thrift.el, may be out of date).
 (defvar jit-lock-start)
 (defvar jit-lock-end)
 
 (defvar scrooge-mode-hook nil)
-;;;###autoload
-(add-to-list 'auto-mode-alist '("\\.thrift\\'" . scrooge-mode))
 
-(defconst scrooge-special-namespace-regexp
-  "^\\(\\(?:#@\\)?\\)\\(namespace\\)[ \t\v\f]+\\([^ \t\v\f]+\\)[ \t\v\f]+\\([^ \t\v\f].*\\).*?$")
+;;; TODO: named regexp groups macro (w more pcase extensions)!!
+(defconst scrooge--special-namespace-regexp
+  (rx (: bol
+         (group-n 1 (? "#@"))
+         (group-n 2 "namespace")
+         (+ whitespace)
+         (group-n 3 (+ (not whitespace)))
+         (+ whitespace)
+         (group-n 4 (: (not whitespace)
+                       (* not-newline)))
+         eol))
+  ;; FIXME: document this!!! this is the only important part!!!
+  "\\(?:^\\(?1:\\(?:#@\\)?\\)\\(?2:namespace\\)[ \t\v\f]+\\(?3:[^ \t\v\f]+\\)[ \t\v\f]+\\(?4:[^ \t\v\f].*\\)?$\\)")
+
+(defconst scrooge--extra-keywords-regexp
+  (rx (: symbol-start
+         ;; Insert more strings here as needed (note that they get regex-escaped)!
+         (| "union")
+         symbol-end)))
 
 ;; syntax coloring
 (defconst scrooge-font-lock-keywords
   (append
+   ;; FIXME: `thrift-font-lock-keywords' uses beginning/end-of-word syntax in their patterns, and it
+   ;; should definitely be matching symbol boundaries instead, so either parse it out of the
+   ;; existing patterns, or just recreate it (that would be sad though).
    thrift-font-lock-keywords
+   `((,scrooge--extra-keywords-regexp . font-lock-keyword-face))
    `((,scrooge-special-namespace-regexp
       (1 font-lock-keyword-face)
       (2 font-lock-builtin-face)
       (3 font-lock-type-face)
       (4 font-lock-string-face)) ;; namespace decls
+     ;; FIXME: fix this regexp and add case-based syntax highlighting!
      ("#.*\\(\n\\|\\'\\)" (0 font-lock-comment-face))))
   "Scrooge Keywords.")
 
@@ -82,6 +104,9 @@
   (set (make-local-variable 'comment-start) "# ")
   (add-hook 'jit-lock-after-change-extend-region-functions
             'scrooge-font-lock-extend t t))
+
+;;;###autoload
+(add-to-list 'auto-mode-alist '("\\.thrift\\'" . scrooge-mode))
 
 (provide 'scrooge)
 ;;; scrooge.el ends here
