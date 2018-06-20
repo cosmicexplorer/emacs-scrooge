@@ -1,4 +1,8 @@
 emacs-scrooge
 =============
 
-[scrooge](https://twitter.github.io/scrooge/) support for emacs. Currently just uses [apache's thrift.el](https://github.com/apache/thrift/blob/master/contrib/thrift.el) and adds the ability to highlight `#@` lines correctly. [GPL 3.0+](./LICENSE) licensed.
+[scrooge](https://twitter.github.io/scrooge/) support for emacs. Currently just depends on the `thrift` package for indentation, and completely redoes the `font-lock-defaults` so that scrooge's `#@namespace scala` lines are highlighted (along with many more fun highlighting improvements)!
+
+# License
+
+[GPL 3.0+](./LICENSE)
