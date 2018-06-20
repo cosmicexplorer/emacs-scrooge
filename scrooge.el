@@ -1,4 +1,4 @@
-;;; scrooge.el --- Major mode for Twitter Scrooge files
+;;; scrooge.el --- Major mode for Twitter Scrooge files -*- lexical-binding: t -*-
 ;; This file is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
 ;; the Free Software Foundation; either version 3, or (at your option)
@@ -28,6 +28,7 @@
 (require 'dash)
 (require 'thrift)
 (require 'font-lock)
+(require 'pcase)
 (require 'rainbow-delimiters)
 (require 'rx)
 
@@ -45,6 +46,11 @@
 (defun scrooge--rx-join (rx-exprs) `(| ,@rx-exprs))
 
 (defun scrooge--rx-symbol-wrap (rx-expr) `(: symbol-start ,rx-expr symbol-end))
+
+(defun scrooge--invoke-regexp (pattern)
+  (lambda (last)
+    (let ((case-fold-search nil))
+      (re-search-forward pattern last t))))
 
 
 ;; Defcustoms
@@ -129,48 +135,37 @@ TODO: make this a `defcustom'!")
 
 ;; Public "immutable" variables
 (defconst scrooge-font-lock-keywords
-  `((,scrooge--special-namespace-line-regexp
-     (1 font-lock-keyword-face)
-     (2 font-lock-builtin-face)
-     (3 font-lock-type-face)
-     (4 font-lock-string-face))
-    (,(rx-to-string scrooge--line-comment-rx-expr)
-     . font-lock-comment-face)
-    (,(-> scrooge--keyword-literals (scrooge--rx-join) (scrooge--rx-symbol-wrap)
-          (rx-to-string))
-     . font-lock-keyword-face)
-    (,(-> scrooge--primitive-types-literals (scrooge--rx-join) (scrooge--rx-symbol-wrap)
-          (rx-to-string))
-     . font-lock-builtin-face)
-    (,(-> scrooge--ordinals-rx-expr (scrooge--rx-symbol-wrap)
-          (rx-to-string))
-     . font-lock-variable-name-face)
-    (,(-> scrooge--title-case-symbol-rx-expr (scrooge--rx-symbol-wrap)
-          (rx-to-string))
-     . font-lock-type-face)
-    (,(-> scrooge--lower-case-symbol-rx-expr (scrooge--rx-symbol-wrap)
-          (rx-to-string))
-     . font-lock-variable-name-face)
-    (,(rx-to-string scrooge--function-decl-rx-expr)
-     (1 font-lock-function-name-face)))
+  (--map
+   (pcase-exhaustive it
+     (`(,regexp . ,rest)
+      (cons (scrooge--invoke-regexp regexp) rest)))
+   `((,scrooge--special-namespace-line-regexp
+      (1 font-lock-keyword-face)
+      (2 font-lock-builtin-face)
+      (3 font-lock-type-face)
+      (4 font-lock-string-face))
+     (,(rx-to-string scrooge--line-comment-rx-expr)
+      . font-lock-comment-face)
+     (,(-> scrooge--keyword-literals (scrooge--rx-join) (scrooge--rx-symbol-wrap)
+           (rx-to-string))
+      . font-lock-keyword-face)
+     (,(-> scrooge--primitive-types-literals (scrooge--rx-join) (scrooge--rx-symbol-wrap)
+           (rx-to-string))
+      . font-lock-builtin-face)
+     (,(-> scrooge--ordinals-rx-expr (scrooge--rx-symbol-wrap)
+           (rx-to-string))
+      . font-lock-variable-name-face)
+     (,(-> scrooge--title-case-symbol-rx-expr (scrooge--rx-symbol-wrap)
+           (rx-to-string))
+      . font-lock-type-face)
+     (,(-> scrooge--lower-case-symbol-rx-expr (scrooge--rx-symbol-wrap)
+           (rx-to-string))
+      . font-lock-variable-name-face)
+     (,(rx-to-string scrooge--function-decl-rx-expr)
+      (1 font-lock-function-name-face))))
   "Scrooge Keywords.
 
 FIXME: add case-based syntax highlighting!")
-
-(defconst scrooge-mode-syntax-table
-  (let ((tbl (make-syntax-table thrift-mode-syntax-table)))
-    ;; Remove the syntax entries for sh-style comments -- we need to parse them ourselves.
-    (modify-syntax-entry ?# "." tbl)
-    (modify-syntax-entry ?\n " " tbl)
-    ;; We want to use symbols here, in my opinion, since
-    (modify-syntax-entry ?_ "_")
-    tbl)
-  "Syntax table for scrooge-mode.
-
-also allowing underscore in words
-
-this does NOT mark sh-style comments! that is done with font locking due to the ambiguity with the
-scrooge #@namespace hack")
 
 
 ;; Implementation methods
@@ -199,13 +194,15 @@ scrooge #@namespace hack")
 ;;;###autoload
 (define-derived-mode scrooge-mode prog-mode "Scrooge"
   "Mode for editing Scrooge files."
-  ;; We can't use :syntax-table because `thrift-mode' clobbers it ):
-  (set-syntax-table scrooge-mode-syntax-table)
   (setq-local font-lock-defaults '(scrooge-font-lock-keywords))
   (setq-local comment-start scrooge--comment-start)
   (setq-local indent-line-function #'scrooge-indent-line)
+  ;; (add-hook 'syntax-propertize-extend-region-functions
+  ;;           #'scrooge--syntax-propertize-extend-region
+  ;;           t t)
   (add-hook 'jit-lock-after-change-extend-region-functions
-            'scrooge--font-lock-extend t t)
+            #'scrooge--font-lock-extend
+            t t)
   (rainbow-delimiters-mode-disable)
   ;; (when scrooge-use-rainbow-delimiters
   ;;   (rainbow-delimiters-mode-enable))
