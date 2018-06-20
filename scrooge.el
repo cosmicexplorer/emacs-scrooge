@@ -92,8 +92,10 @@
     "byte"
     "i16" "i32" "i64"
     "double"
-    "binary"
-    "map"
+    "binary"))
+
+(defconst scrooge--generic-type-symbols
+  `("map"
     "list"
     "set"))
 
@@ -125,7 +127,7 @@
 
 TODO: make this a `defcustom'!")
 
-(defconst scrooge--line-comment-rx-expr `(: "#" (* not-newline) line-end)
+(defconst scrooge--line-comment-rx-expr `(: "#" (* not-newline) "\n")
   "???")
 
 (defconst scrooge--title-case-symbol-rx-expr `(: upper-case (* (| alpha "_"))))
@@ -152,6 +154,12 @@ TODO: make this a `defcustom'!")
      (,(-> scrooge--primitive-types-literals (scrooge--rx-join) (scrooge--rx-symbol-wrap)
            (rx-to-string))
       . font-lock-builtin-face)
+     (,(-> (scrooge--match-generic-types-rx-expr) (scrooge--rx-symbol-wrap)
+           (rx-to-string))
+      (1 font-lock-builtin-face)
+      (2 font-lock-builtin-face)
+      (3 font-lock-type-face)
+      (4 font-lock-builtin-face))
      (,(-> scrooge--ordinals-rx-expr (scrooge--rx-symbol-wrap)
            (rx-to-string))
       . font-lock-variable-name-face)
@@ -182,6 +190,12 @@ FIXME: add case-based syntax highlighting!")
     (when res
       (setq jit-lock-start (car res)
             jit-lock-end (cdr res)))))
+
+(defun scrooge--match-generic-types-rx-expr ()
+  `(: (group-n 1 (| ,@scrooge--generic-type-symbols))
+      (group-n 2 "<")
+      (group-n 3 ,scrooge--title-case-symbol-rx-expr)
+      (group-n 4 ">")))
 
 
 ;; Interactive methods
