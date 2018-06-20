@@ -14,7 +14,7 @@
 
 ;; Author: Daniel McClanahan <danieldmcclanahan@gmail.com>
 ;; Version: 0.2
-;; Package-Requires: ((emacs "24") (dash "2.13.0") (thrift "0.9.3"))
+;; Package-Requires: ((emacs "24") (cl-lib "0.5") (dash "2.13.0") (thrift "0.9.3"))
 ;; Keywords: scrooge, thrift
 
 ;;; Commentary:
@@ -24,10 +24,10 @@
 
 ;;; Code:
 
+(require 'cl-lib)
 (require 'dash)
 (require 'thrift)
 (require 'font-lock)
-(require 'pcase)
 (require 'rx)
 
 
@@ -92,8 +92,7 @@
     "list"
     "set"))
 
-(defconst scrooge--ordinals-rx-expr `(+ digit)
-  "???")
+(defconst scrooge--ordinals-rx-expr `(+ digit))
 
 ;;; TODO: named regexp groups macro (w more pcase extensions)!!
 (defconst scrooge--special-namespace-line-regexp
@@ -106,8 +105,10 @@
          (group-n 4 (: (not whitespace)
                        (* not-newline)))
          eol))
-  ;; FIXME: document this!!! this is the only important part!!!
-  "\\(?:^\\(?1:\\(?:#@\\)?\\)\\(?2:namespace\\)[ \t\v\f]+\\(?3:[^ \t\v\f]+\\)[ \t\v\f]+\\(?4:[^ \t\v\f].*\\)?$\\)")
+  "This regexp matches a line beginning with #@namespace
+
+These lines are how scrooge ensures compatibility with Apache Thrift, because they are normally
+parsed as comments.")
 
 (defconst scrooge--function-decl-rx-expr
   `(: symbol-start
@@ -121,7 +122,7 @@
 TODO: make this a `defcustom'!")
 
 (defconst scrooge--line-comment-rx-expr `(: "#" (* not-newline) "\n")
-  "???")
+  "We contain the newline because that's what you get if you use a syntax table to mark comments.")
 
 (defconst scrooge--title-case-symbol-rx-expr `(: upper-case (* (| alpha "_"))))
 
@@ -131,9 +132,11 @@ TODO: make this a `defcustom'!")
 ;; Public "immutable" variables
 (defconst scrooge-font-lock-keywords
   (--map
-   (pcase-exhaustive it
-     (`(,regexp . ,rest)
-      (cons (scrooge--invoke-regexp regexp) rest)))
+   ;; Deconstruct each pair into a regexp and the rest, and convert the regexp into a function. This
+   ;; function is invoked to set match data, and allows us to control `case-fold-search' for our
+   ;; font lock keyword matching.
+   (cl-destructuring-bind (regexp . rest) it
+     (cons (scrooge--invoke-regexp regexp) rest))
    `((,scrooge--special-namespace-line-regexp
       (1 font-lock-keyword-face)
       (2 font-lock-builtin-face)
@@ -164,9 +167,7 @@ TODO: make this a `defcustom'!")
       . font-lock-variable-name-face)
      (,(rx-to-string scrooge--function-decl-rx-expr)
       (1 font-lock-function-name-face))))
-  "Scrooge Keywords.
-
-FIXME: add case-based syntax highlighting!")
+  "Scrooge Keywords.")
 
 
 ;; Implementation methods
@@ -204,9 +205,6 @@ FIXME: add case-based syntax highlighting!")
   (setq-local font-lock-defaults '(scrooge-font-lock-keywords))
   (setq-local comment-start scrooge--comment-start)
   (setq-local indent-line-function #'scrooge-indent-line)
-  ;; (add-hook 'syntax-propertize-extend-region-functions
-  ;;           #'scrooge--syntax-propertize-extend-region
-  ;;           t t)
   (add-hook 'jit-lock-after-change-extend-region-functions
             #'scrooge--font-lock-extend
             t t))
