@@ -170,12 +170,23 @@ TODO: make this a `defcustom'!")
   "Scrooge Keywords.")
 
 
+;; Macros
+(defmacro scrooge--at-point-in-buffer (pt &rest body)
+  "Go to the point PT and execute BODY, wrapped in a `save-excursion'."
+  (declare (indent 1))
+  `(save-excursion
+     ;; ,pt is only evaluated once!
+     (goto-char ,pt)
+     ,@body))
+
+
 ;; Implementation methods
 (defun scrooge--syntax-propertize-extend-region (start end)
   "Extend region to propertize between START and END upon change."
-  (let* ((b (line-beginning-position))
-         (e (if (and (bolp) (> (point) b)) (point)
-              (min (1+ (line-end-position)) (point-max)))))
+  (let* ((b (scrooge--at-point-in-buffer start
+              (line-beginning-position)))
+         (e (scrooge--at-point-in-buffer end
+              (-> (line-end-position) (1+) (min (point-max))))))
     (unless (and (= start b) (= end e)) (cons b e))))
 
 (defun scrooge--font-lock-extend (start end _)
