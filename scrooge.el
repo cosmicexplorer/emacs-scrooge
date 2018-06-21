@@ -105,7 +105,7 @@
          (group-n 4 (: (not whitespace)
                        (* not-newline)))
          eol))
-  "This regexp matches a line beginning with #@namespace
+  "This regexp matches a line beginning with #@namespace.
 
 These lines are how scrooge ensures compatibility with Apache Thrift, because they are normally
 parsed as comments.")
@@ -119,10 +119,13 @@ parsed as comments.")
 (defconst scrooge--comment-start "# "
   "Value to set `comment-start' when entering `scrooge-mode'.
 
-TODO: make this a `defcustom'!")
+TODO: make this a `defcustom'! Should probably support `comment-end' etc too.")
 
 (defconst scrooge--line-comment-rx-expr `(: "#" (* not-newline) "\n")
-  "We contain the newline because that's what you get if you use a syntax table to mark comments.")
+  "We contain the newline because that's what you get if you use a syntax table to mark comments.
+
+That is to say, they mark the newline with a comment face. If you use a color theme which changes
+the comment's background background color this can be seen clearly.")
 
 (defconst scrooge--title-case-symbol-rx-expr `(: upper-case (* (| alpha "_"))))
 
@@ -132,9 +135,9 @@ TODO: make this a `defcustom'!")
 ;; Public "immutable" variables
 (defconst scrooge-font-lock-keywords
   (--map
-   ;; Deconstruct each pair into a regexp and the rest, and convert the regexp into a function. This
-   ;; function is invoked to set match data, and allows us to control `case-fold-search' for our
-   ;; font lock keyword matching.
+   ;; Deconstruct each pair into a regexp and the rest, and convert the regexp into a closure. The
+   ;; closure is invoked by `font-lock' to set match data, and allows us to control
+   ;; e.g. `case-fold-search' for our font lock keyword matching.
    (cl-destructuring-bind (regexp . rest) it
      (cons (scrooge--invoke-regexp regexp) rest))
    `((,scrooge--special-namespace-line-regexp
@@ -197,6 +200,7 @@ TODO: make this a `defcustom'!")
             jit-lock-end (cdr res)))))
 
 (defun scrooge--match-generic-types-rx-expr ()
+  "Creates an `rx' sexp to match a use of a generic collection type, e.g. list<MyType>."
   `(: (group-n 1 (| ,@scrooge--generic-type-symbols))
       (group-n 2 "<")
       (group-n 3 ,scrooge--title-case-symbol-rx-expr)
