@@ -132,6 +132,15 @@ the comment's background background color this can be seen clearly.")
 (defconst scrooge--lower-case-symbol-rx-expr `(: lower-case (* (| alpha "_"))))
 
 
+;; Helper methods
+(defun scrooge--match-generic-types-rx-expr ()
+  "Creates an `rx' sexp to match a use of a generic collection type, e.g. list<MyType>."
+  `(: (group-n 1 (| ,@scrooge--generic-type-symbols))
+      (group-n 2 "<")
+      (group-n 3 ,scrooge--title-case-symbol-rx-expr)
+      (group-n 4 ">")))
+
+
 ;; Public "immutable" variables
 (defconst scrooge-font-lock-keywords
   (--map
@@ -198,13 +207,6 @@ the comment's background background color this can be seen clearly.")
     (when res
       (setq jit-lock-start (car res)
             jit-lock-end (cdr res)))))
-
-(defun scrooge--match-generic-types-rx-expr ()
-  "Creates an `rx' sexp to match a use of a generic collection type, e.g. list<MyType>."
-  `(: (group-n 1 (| ,@scrooge--generic-type-symbols))
-      (group-n 2 "<")
-      (group-n 3 ,scrooge--title-case-symbol-rx-expr)
-      (group-n 4 ">")))
 
 
 ;; Interactive methods
